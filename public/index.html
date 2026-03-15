@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YBF Club Finance</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+:root{
+  --bg:#0f1117;--bg2:#161822;--card:#1c1f2e;--card2:#222537;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --tx:#f0f0f5;--tx2:#9194a8;--tx3:#5a5d72;
+  --acc:#4f7cff;--acc2:#3a61e0;
+  --green:#34c77b;--gbg:rgba(52,199,123,0.10);
+  --red:#ff5c6a;--rbg:rgba(255,92,106,0.10);
+  --amber:#ffb940;--ambg:rgba(255,185,64,0.10);
+  --purple:#a78bfa;--pubg:rgba(167,139,250,0.10);
+  --r:12px;--rs:8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px;line-height:1.6}
+
+/* LOGIN */
+.lpage{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1.5rem;position:relative;overflow:hidden}
+.lpage::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(79,124,255,0.12) 0%,transparent 70%);top:-100px;left:-100px;pointer-events:none}
+.lpage::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(52,199,123,0.08) 0%,transparent 70%);bottom:-80px;right:-80px;pointer-events:none}
+.lbox{background:var(--card);border:1px solid var(--border2);border-radius:20px;padding:2.8rem 2.5rem;width:100%;max-width:400px;position:relative;z-index:1;animation:fadeUp .4s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.llogo{width:52px;height:52px;background:var(--acc);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;color:#fff;margin:0 auto 1.4rem}
+.lbox h1{text-align:center;font-size:22px;font-weight:600;margin-bottom:4px}
+.lsub{text-align:center;font-size:13px;color:var(--tx2);margin-bottom:2rem}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:500;color:var(--tx2);margin-bottom:6px;letter-spacing:.05em;text-transform:uppercase}
+.field input{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:14px;padding:11px 14px;outline:none;transition:border .2s,box-shadow .2s}
+.field input:focus{border-color:var(--acc);box-shadow:0 0 0 3px rgba(79,124,255,.15)}
+.field input::placeholder{color:var(--tx3)}
+.btn{font-family:inherit;font-size:14px;font-weight:500;padding:10px 20px;border-radius:var(--rs);border:1px solid var(--border2);cursor:pointer;transition:all .15s;background:var(--card2);color:var(--tx)}
+.btn:hover{background:var(--border2)}
+.btn-acc{background:var(--acc);color:#fff;border-color:var(--acc);width:100%;padding:12px;margin-top:8px;font-size:15px;font-weight:600}
+.btn-acc:hover{background:var(--acc2);border-color:var(--acc2)}
+.btn-danger{color:var(--red);border-color:rgba(255,92,106,.25);background:transparent}
+.btn-danger:hover{background:var(--rbg)}
+.btn-green{background:var(--green);color:#0f1117;border-color:var(--green);font-weight:600}
+.btn-green:hover{background:#28b36c}
+.lerr{font-size:12px;color:var(--red);text-align:center;margin-top:10px;display:none}
+.forgot{font-size:12px;color:var(--tx3);text-align:center;margin-top:16px}
+.forgot span{color:var(--acc);cursor:pointer}
+.forgot span:hover{text-decoration:underline}
+.phone-box{background:var(--ambg);border:1px solid rgba(255,185,64,.2);border-radius:var(--rs);padding:14px 16px;margin-top:14px;display:none}
+.phone-box .pl{font-size:12px;color:var(--amber);font-weight:500;margin-bottom:4px}
+.phone-box .pn{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600}
+.phone-box .pm{font-size:12px;color:var(--tx2);margin-top:2px}
+
+/* LOADING */
+.loading{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;color:var(--tx2);font-size:14px}
+.spinner{width:36px;height:36px;border:3px solid var(--border2);border-top-color:var(--acc);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HEADER */
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:0 2rem;display:flex;align-items:center;justify-content:space-between;height:60px;position:sticky;top:0;z-index:100}
+.hlogo{display:flex;align-items:center;gap:10px;font-weight:600;font-size:16px}
+.hico{width:32px;height:32px;background:var(--acc);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff}
+.hright{display:flex;align-items:center;gap:12px}
+.huser{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--border);border-radius:50px;padding:5px 14px 5px 5px}
+.havat{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+.huname{font-size:13px;font-weight:500}
+.hrole{font-size:11px;padding:2px 9px;border-radius:20px;font-weight:500;background:rgba(79,124,255,.15);color:var(--acc)}
+.hrole.member{background:var(--gbg);color:var(--green)}
+
+/* TABS */
+.tabs{display:flex;background:var(--card);border-bottom:1px solid var(--border);padding:0 2rem;overflow-x:auto}
+.tab{padding:13px 20px;font-size:13px;font-weight:500;color:var(--tx2);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--acc);border-bottom-color:var(--acc)}
+
+/* MAIN */
+.main{max-width:1100px;margin:0 auto;padding:2rem 1.5rem}
+.page{display:none}.page.active{display:block}
+
+/* STATS */
+.stats{display:grid;gap:14px;margin-bottom:1.8rem}
+.s4{grid-template-columns:repeat(4,1fr)}.s3{grid-template-columns:repeat(3,1fr)}.s2{grid-template-columns:repeat(2,1fr)}
+.sc{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.4rem}
+.sl{font-size:11px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.sv{font-size:26px;font-weight:700;font-family:'JetBrains Mono',monospace;letter-spacing:-.02em}
+.ss{font-size:12px;color:var(--tx3);margin-top:4px}
+.sc.g .sv{color:var(--green)}.sc.r .sv{color:var(--red)}.sc.a .sv{color:var(--amber)}.sc.pu .sv{color:var(--purple)}
+
+/* SECTION */
+.sec{background:var(--card);border:1px solid var(--border);border-radius:var(--r);margin-bottom:1.5rem;overflow:hidden}
+.sh{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;border-bottom:1px solid var(--border);background:var(--card2)}
+.st{font-size:13px;font-weight:600;color:var(--tx2);text-transform:uppercase;letter-spacing:.06em}
+.sb{padding:1.4rem}
+
+/* FORMS */
+.fg{display:grid;gap:12px;align-items:end}
+.fg4{grid-template-columns:2fr 1fr 1fr 1fr}.fg3{grid-template-columns:2fr 1fr 1fr}
+.f label{display:block;font-size:11px;font-weight:500;color:var(--tx2);margin-bottom:5px;text-transform:uppercase;letter-spacing:.05em}
+.f input,.f select{width:100%;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:13px;padding:9px 12px;outline:none;transition:border .15s}
+.f input:focus,.f select:focus{border-color:var(--acc);box-shadow:0 0 0 2px rgba(79,124,255,.12)}
+.f input::placeholder{color:var(--tx3)}
+.f select option{background:var(--card2)}
+.br{display:flex;gap:10px;align-items:center}
+.br input{flex:1;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:13px;padding:9px 12px;outline:none}
+.br input:focus{border-color:var(--green);box-shadow:0 0 0 2px rgba(52,199,123,.12)}
+.br input::placeholder{color:var(--tx3)}
+
+/* FILTERS */
+.filt{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:1rem}
+.filt select,.filt input{background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:12px;padding:7px 11px;outline:none}
+.filt select:focus,.filt input:focus{border-color:var(--acc)}
+.filt select option{background:var(--card2)}
+.flbl{font-size:11px;font-weight:500;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.09em;color:var(--tx3);padding:0 14px 10px;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid var(--border);transition:background .1s}
+tbody tr:last-child{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody td{padding:11px 14px;vertical-align:middle}
+.mono{font-family:'JetBrains Mono',monospace;font-weight:500}
+.empty{text-align:center;padding:3rem;color:var(--tx3);font-size:13px}
+
+/* BADGES */
+.badge{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;display:inline-block;white-space:nowrap}
+.ba{background:rgba(79,124,255,.15);color:var(--acc)}
+.bm{background:var(--gbg);color:var(--green)}
+.be{background:var(--rbg);color:var(--red)}
+.bd{background:var(--gbg);color:var(--green)}
+.bFood{background:var(--ambg);color:var(--amber)}
+.bTransport{background:var(--gbg);color:var(--green)}
+.bEquipment{background:rgba(79,124,255,.12);color:var(--acc)}
+.bEvent{background:var(--pubg);color:var(--purple)}
+.bDonation{background:var(--pubg);color:var(--purple)}
+.bMaintenance,.bOther,.bDeposit{background:rgba(255,255,255,.07);color:var(--tx2)}
+
+/* MEMBER LIST */
+.mlist{display:flex;flex-direction:column;gap:10px}
+.mrow{display:flex;align-items:center;gap:14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;transition:border-color .15s}
+.mrow:hover{border-color:var(--border2)}
+.mavat{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;flex-shrink:0;background:rgba(52,199,123,.15);color:var(--green)}
+.minfo{flex:1;min-width:0}
+.mname{font-size:14px;font-weight:600}
+.mmeta{font-size:12px;color:var(--tx2);margin-top:2px}
+.mphone{font-size:12px;color:var(--tx3);font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:5px;margin-top:5px}
+.mact{display:flex;gap:8px;flex-shrink:0}
+.mspent{text-align:right;flex-shrink:0}
+.mamt{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--red)}
+.mcnt{font-size:11px;color:var(--tx3);margin-top:2px}
+
+/* MONTH CARDS */
+.mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:1rem}
+.mcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rs);padding:1rem;cursor:pointer;transition:all .15s}
+.mcard:hover,.mcard.sel{border-color:var(--acc);background:rgba(79,124,255,.06)}
+.mcm{font-size:12px;font-weight:600;color:var(--tx2)}
+.mct{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;color:var(--red);margin-top:4px}
+.mcn{font-size:11px;color:var(--tx3);margin-top:2px}
+
+/* MODALS */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:2rem;width:100%;max-width:440px;animation:fadeUp .2s ease}
+.modal h2{font-size:17px;font-weight:600;margin-bottom:1.4rem}
+.modal .field{margin-bottom:12px}
+.mbtns{display:flex;gap:10px;margin-top:1.4rem}
+
+/* SYNC STATUS */
+.sync{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border)}
+.sync.ok{background:var(--gbg);color:var(--green);border-color:rgba(52,199,123,.2)}
+.sync.saving{background:var(--ambg);color:var(--amber);border-color:rgba(255,185,64,.2)}
+.sync.err{background:var(--rbg);color:var(--red);border-color:rgba(255,92,106,.2)}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;right:2rem;background:var(--card2);border:1px solid var(--border2);color:var(--tx);font-size:13px;padding:10px 18px;border-radius:10px;z-index:500;opacity:0;transform:translateY(10px);transition:all .25s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:700px){
+  .s4,.s3{grid-template-columns:1fr 1fr}
+  .fg4,.fg3{grid-template-columns:1fr 1fr}
+  .header{padding:0 1rem}.main{padding:1rem}.tabs{padding:0 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loadingScreen" class="loading">
+  <div class="spinner"></div>
+  <span>Connecting to database...</span>
+</div>
+
+<!-- LOGIN -->
+<div id="loginPage" class="lpage" style="display:none">
+  <div class="lbox">
+    <div class="llogo">YBF</div>
+    <h1>YBF Club Finance</h1>
+    <p class="lsub">Sign in to your account</p>
+    <div class="field"><label>Username</label><input type="text" id="lUser" placeholder="Enter username" onkeydown="if(event.key==='Enter')document.getElementById('lPass').focus()"></div>
+    <div class="field"><label>Password</label><input type="password" id="lPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn btn-acc" onclick="doLogin()">Sign In</button>
+    <div class="lerr" id="lerr">Incorrect username or password.</div>
+    <div class="forgot">Forgot password? <span onclick="showForgot()">Click here</span></div>
+    <div class="phone-box" id="forgotBox">
+      <div class="pl">Contact Admin to reset your password</div>
+      <div class="pn" id="adminPhone">—</div>
+      <div class="pm" id="adminPhoneName"></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appWrap" style="display:none">
+  <div class="header">
+    <div class="hlogo"><div class="hico">YBF</div><span>Club Finance</span></div>
+    <div class="hright">
+      <span class="sync" id="syncStatus">Syncing...</span>
+      <div class="huser">
+        <div class="havat" id="hAvat"></div>
+        <div class="huname" id="hName"></div>
+      </div>
+      <span class="hrole" id="hRole">Admin</span>
+      <button class="btn" style="font-size:12px;padding:6px 14px" onclick="logout()">Sign out</button>
+    </div>
+  </div>
+  <div class="tabs" id="tabBar"></div>
+  <div class="main">
+
+    <!-- ADMIN OVERVIEW -->
+    <div class="page" id="pg-overview">
+      <div class="stats s4">
+        <div class="sc g"><div class="sl">Club Balance</div><div class="sv" id="s-bal">₹0</div><div class="ss">Available funds</div></div>
+        <div class="sc r"><div class="sl">Total Spent</div><div class="sv" id="s-exp">₹0</div><div class="ss" id="s-expc">0 entries</div></div>
+        <div class="sc a"><div class="sl">Total Added</div><div class="sv" id="s-dep">₹0</div><div class="ss" id="s-depc">0 deposits</div></div>
+        <div class="sc pu"><div class="sl">Members</div><div class="sv" id="s-mem">0</div><div class="ss">Active</div></div>
+      </div>
+      <div class="sec">
+        <div class="sh"><span class="st">Add Money to Club Balance</span></div>
+        <div class="sb">
+          <div class="br">
+            <input type="number" id="aAmt" placeholder="Amount (₹)" min="1" style="max-width:180px">
+            <input type="text" id="aNote" placeholder="Note  e.g. Monthly collection">
+            <button class="btn btn-green" onclick="addBalance()">+ Add Balance</button>
+          </div>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sh"><span class="st">Add Club Expense</span></div>
+        <div class="sb">
+          <div class="fg fg4">
+            <div class="f"><label>Description</label><input type="text" id="eDesc" placeholder="What was bought?"></div>
+            <div class="f"><label>Amount (₹)</label><input type="number" id="eAmt" min="0"></div>
+            <div class="f"><label>Category</label>
+              <select id="eCat"><option>Food</option><option>Transport</option><option>Equipment</option><option>Event</option><option>Maintenance</option><option>Other</option></select>
+            </div>
+            <div class="f"><label>Date</label><input type="date" id="eDate"></div>
+          </div>
+          <button class="btn btn-acc" style="margin-top:12px" onclick="addClubExp()">Add Expense</button>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sh">
+          <span class="st">All Transactions</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn" style="font-size:12px;padding:5px 12px" onclick="exportExcel()">Excel</button>
+            <button class="btn" style="font-size:12px;padding:5px 12px" onclick="exportPDF()">PDF</button>
+          </div>
+        </div>
+        <div class="sb">
+          <div class="filt">
+            <span class="flbl">Filter</span>
+            <select id="af-who" onchange="renderAllTx()"><option value="">All users</option><option value="__club__">Club only</option></select>
+            <select id="af-type" onchange="renderAllTx()"><option value="">All types</option><option value="expense">Expenses</option><option value="deposit">Deposits</option><option value="member">Member</option></select>
+            <select id="af-yr" onchange="renderAllTx()"><option value="">All years</option></select>
+            <select id="af-mo" onchange="renderAllTx()">
+              <option value="">All months</option>
+              <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option>
+              <option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+            </select>
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="clrAF()">Clear</button>
+          </div>
+          <div class="tw">
+            <table><thead><tr><th>Date</th><th>User</th><th>Description</th><th>Category</th><th>Type</th><th style="text-align:right">Amount</th><th style="text-align:right">Club Bal.</th><th></th></tr></thead>
+            <tbody id="allTxBody"></tbody></table>
+            <div class="empty" id="allTxEmpty" style="display:none">No transactions yet.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADMIN MEMBERS -->
+    <div class="page" id="pg-members">
+      <div class="sec">
+        <div class="sh">
+          <span class="st">Club Members</span>
+          <button class="btn btn-acc" style="font-size:12px;padding:6px 14px" onclick="openAddMember()">+ Add Member</button>
+        </div>
+        <div class="sb">
+          <div class="mlist" id="memberList"></div>
+          <div class="empty" id="memberEmpty" style="display:none">No members yet. Add one!</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEMBER MY EXPENSES -->
+    <div class="page" id="pg-myexp">
+      <div class="stats s3">
+        <div class="sc r"><div class="sl">My Total Spent</div><div class="sv" id="m-tot">₹0</div><div class="ss" id="m-cnt">0 entries</div></div>
+        <div class="sc"><div class="sl">This Year</div><div class="sv" id="m-yr">₹0</div><div class="ss" id="m-yrl">—</div></div>
+        <div class="sc"><div class="sl">This Month</div><div class="sv" id="m-mo">₹0</div><div class="ss" id="m-mol">—</div></div>
+      </div>
+      <div class="sec">
+        <div class="sh"><span class="st" id="m-add-t">Add My Expense</span></div>
+        <div class="sb">
+          <div class="fg fg4">
+            <div class="f"><label>Product / Item</label><input type="text" id="mDesc" placeholder="What did you spend on?"></div>
+            <div class="f"><label>Amount (₹)</label><input type="number" id="mAmt" min="0"></div>
+            <div class="f"><label>Category</label>
+              <select id="mCat"><option>Food</option><option>Transport</option><option>Equipment</option><option>Event</option><option>Donation</option><option>Other</option></select>
+            </div>
+            <div class="f"><label>Date</label><input type="date" id="mDate"></div>
+          </div>
+          <div class="f" style="margin-top:10px"><label>Note (optional)</label><input type="text" id="mNote" placeholder="Any extra details..."></div>
+          <button class="btn btn-acc" style="margin-top:12px" onclick="addMyExp()">Add Expense</button>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="sh">
+          <span class="st">Monthly Summary</span>
+          <select id="m-yrsel" onchange="renderMyPage()" style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--rs);color:var(--tx);font-family:inherit;font-size:12px;padding:5px 10px;outline:none"></select>
+        </div>
+        <div class="sb"><div class="mgrid" id="monthGrid"></div></div>
+      </div>
+      <div class="sec">
+        <div class="sh">
+          <span class="st">Expense History</span>
+          <div style="display:flex;gap:8px">
+            <button class="btn" style="font-size:12px;padding:5px 12px" onclick="exportMemberExcel()">Excel</button>
+            <button class="btn" style="font-size:12px;padding:5px 12px" onclick="exportMemberPDF()">PDF</button>
+          </div>
+        </div>
+        <div class="sb">
+          <div class="filt">
+            <span class="flbl">Filter</span>
+            <select id="mf-yr" onchange="renderMyTable()"><option value="">All years</option></select>
+            <select id="mf-mo" onchange="renderMyTable()">
+              <option value="">All months</option>
+              <option value="01">Jan</option><option value="02">Feb</option><option value="03">Mar</option><option value="04">Apr</option><option value="05">May</option><option value="06">Jun</option>
+              <option value="07">Jul</option><option value="08">Aug</option><option value="09">Sep</option><option value="10">Oct</option><option value="11">Nov</option><option value="12">Dec</option>
+            </select>
+            <select id="mf-cat" onchange="renderMyTable()">
+              <option value="">All categories</option>
+              <option>Food</option><option>Transport</option><option>Equipment</option><option>Event</option><option>Donation</option><option>Other</option>
+            </select>
+            <button class="btn" style="font-size:11px;padding:5px 10px" onclick="clrMF()">Clear</button>
+          </div>
+          <div class="tw">
+            <table><thead><tr><th>Date</th><th>Product / Item</th><th>Category</th><th>Note</th><th style="text-align:right">Amount</th><th></th></tr></thead>
+            <tbody id="myTxBody"></tbody></table>
+            <div class="empty" id="myTxEmpty" style="display:none">No expenses yet. Add one above!</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADD/EDIT MEMBER MODAL -->
+<div class="overlay" id="memberModal">
+  <div class="modal">
+    <h2 id="modalTitle">Add Member</h2>
+    <div class="field"><label>Full Name</label><input type="text" id="mName" placeholder="e.g. Ravi Kumar"></div>
+    <div class="field"><label>Username</label><input type="text" id="mUsername" placeholder="e.g. ravi123" autocomplete="off"></div>
+    <div class="field"><label>Password</label><input type="password" id="mPassword" placeholder="Set a password" autocomplete="new-password"></div>
+    <div class="field"><label>Phone Number</label><input type="tel" id="mPhone" placeholder="e.g. 9876543210"></div>
+    <div class="mbtns">
+      <button class="btn btn-acc" onclick="saveMember()" style="flex:1" id="saveMemBtn">Add Member</button>
+      <button class="btn" onclick="closeMemberModal()" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="overlay" id="deleteModal">
+  <div class="modal">
+    <h2>Delete entry?</h2>
+    <p style="font-size:13px;color:var(--tx2);margin-bottom:1.2rem">This will permanently remove the record.</p>
+    <div class="mbtns">
+      <button class="btn btn-danger" onclick="confirmDelete()" style="flex:1">Yes, Delete</button>
+      <button class="btn" onclick="closeDeleteModal()" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESET PASSWORD MODAL -->
+<div class="overlay" id="resetModal">
+  <div class="modal">
+    <h2>Reset Password</h2>
+    <p style="font-size:13px;color:var(--tx2);margin-bottom:1rem" id="resetSub"></p>
+    <div class="field"><label>New Password</label><input type="password" id="resetPass" placeholder="Enter new password" autocomplete="new-password"></div>
+    <div class="mbtns">
+      <button class="btn btn-acc" onclick="confirmReset()" style="flex:1">Save Password</button>
+      <button class="btn" onclick="closeResetModal()" style="flex:1">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- FIREBASE SDK -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, doc, getDoc, setDoc, updateDoc, collection,
+  addDoc, getDocs, deleteDoc, onSnapshot, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+// ── FIREBASE CONFIG ──
+const firebaseConfig = {
+  apiKey: "AIzaSyBTpVm8WVfS4fucgmb_pGTveT4g8_maDzg",
+  authDomain: "ybf-club-finance.firebaseapp.com",
+  projectId: "ybf-club-finance",
+  storageBucket: "ybf-club-finance.firebasestorage.app",
+  messagingSenderId: "572460039060",
+  appId: "1:572460039060:web:9d8ef5edae9b5a4e6d6d81"
+};
+
+const fireapp = initializeApp(firebaseConfig);
+const db = getFirestore(fireapp);
+
+// ── CONSTANTS ──
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+// ── STATE ──
+let CU = null;          // current user
+let DB = {              // local cache
+  admin: { username:'admin', password:'admin2024', name:'Admin', phone:'9000000000' },
+  members: [],
+  clubBalance: 0,
+  clubTx: []
+};
+let delTarget = null;
+let editingMemberId = null;
+let resetTargetId = null;
+let unsubscribe = null;
+
+// ── FIRESTORE REFS ──
+const configRef   = doc(db, 'club', 'config');
+const clubTxRef   = collection(db, 'clubTransactions');
+const membersRef  = collection(db, 'members');
+
+// ══════════════════════════════════
+//  LOAD FROM FIRESTORE
+// ══════════════════════════════════
+async function loadFromFirestore() {
+  try {
+    // load config (admin + balance)
+    const configSnap = await getDoc(configRef);
+    if (configSnap.exists()) {
+      const d = configSnap.data();
+      DB.admin = d.admin || DB.admin;
+      DB.clubBalance = d.clubBalance || 0;
+    } else {
+      // first time — write default config
+      await setDoc(configRef, { admin: DB.admin, clubBalance: 0 });
+    }
+
+    // load members
+    const memSnap = await getDocs(membersRef);
+    DB.members = [];
+    memSnap.forEach(d => DB.members.push({ id: d.id, ...d.data() }));
+
+    // load club transactions
+    const txSnap = await getDocs(query(clubTxRef, orderBy('id','desc')));
+    DB.clubTx = [];
+    txSnap.forEach(d => DB.clubTx.push({ firestoreId: d.id, ...d.data() }));
+
+    // load member expenses for each member
+    for (const m of DB.members) {
+      const expSnap = await getDocs(collection(db, 'members', m.id, 'expenses'));
+      m.expenses = [];
+      expSnap.forEach(d => m.expenses.push({ firestoreId: d.id, ...d.data() }));
+      m.expenses.sort((a,b) => b.id - a.id);
+    }
+
+    setSyncStatus('ok', 'Synced');
+    return true;
+  } catch(e) {
+    console.error(e);
+    setSyncStatus('err', 'Offline');
+    return false;
+  }
+}
+
+async function saveConfig() {
+  setSyncStatus('saving','Saving...');
+  try {
+    await setDoc(configRef, { admin: DB.admin, clubBalance: DB.clubBalance });
+    setSyncStatus('ok','Saved');
+  } catch(e) { setSyncStatus('err','Error'); }
+}
+
+function setSyncStatus(type, msg) {
+  const el = document.getElementById('syncStatus');
+  if (!el) return;
+  el.className = 'sync ' + type;
+  el.textContent = msg;
+}
+
+// ══════════════════════════════════
+//  INIT
+// ══════════════════════════════════
+window.addEventListener('load', async () => {
+  await loadFromFirestore();
+  document.getElementById('loadingScreen').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+});
+
+// ══════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════
+window.doLogin = async function() {
+  const user = document.getElementById('lUser').value.trim();
+  const pass = document.getElementById('lPass').value;
+  document.getElementById('lerr').style.display = 'none';
+
+  if (user === DB.admin.username && pass === DB.admin.password) {
+    CU = { ...DB.admin, role: 'admin' };
+    enterApp(); return;
+  }
+  const member = DB.members.find(m => m.username === user && m.password === pass);
+  if (member) {
+    CU = { ...member, role: 'member' };
+    enterApp(); return;
+  }
+  document.getElementById('lerr').style.display = 'block';
+  document.getElementById('lPass').value = '';
+};
+
+window.showForgot = function() {
+  const box = document.getElementById('forgotBox');
+  const showing = box.style.display === 'block';
+  if (showing) { box.style.display = 'none'; return; }
+  document.getElementById('adminPhone').textContent = DB.admin.phone || 'Not set';
+  document.getElementById('adminPhoneName').textContent = 'Admin: ' + DB.admin.name;
+  box.style.display = 'block';
+};
+
+window.logout = function() {
+  CU = null;
+  document.getElementById('appWrap').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('lUser').value = '';
+  document.getElementById('lPass').value = '';
+  document.getElementById('lerr').style.display = 'none';
+  document.getElementById('forgotBox').style.display = 'none';
+};
+
+function enterApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appWrap').style.display = 'block';
+  setupApp();
+  render();
+}
+
+// ══════════════════════════════════
+//  SETUP
+// ══════════════════════════════════
+function setupApp() {
+  const isAdmin = CU.role === 'admin';
+  const initials = CU.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const av = document.getElementById('hAvat');
+  av.textContent = initials;
+  av.style.background = isAdmin ? 'rgba(79,124,255,.2)' : 'rgba(52,199,123,.2)';
+  av.style.color = isAdmin ? 'var(--acc)' : 'var(--green)';
+  document.getElementById('hName').textContent = CU.name;
+  const re = document.getElementById('hRole');
+  re.textContent = isAdmin ? 'Admin' : 'Member';
+  re.className = 'hrole' + (isAdmin ? '' : ' member');
+
+  const tabs = isAdmin
+    ? [{id:'overview',label:'Overview'},{id:'members',label:'Members'}]
+    : [{id:'myexp',label:'My Expenses'}];
+
+  document.getElementById('tabBar').innerHTML = tabs.map((t,i) =>
+    `<div class="tab ${i===0?'active':''}" id="tab-${t.id}" onclick="switchTab('${t.id}')">${t.label}</div>`
+  ).join('');
+
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+tabs[0].id).classList.add('active');
+
+  const today = new Date().toISOString().slice(0,10);
+  ['eDate','mDate'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=today; });
+
+  // populate who filter
+  const ws = document.getElementById('af-who');
+  if (ws) {
+    ws.innerHTML = '<option value="">All users</option><option value="__club__">Club only</option>'
+      + DB.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  }
+  popYears();
+}
+
+window.switchTab = function(id) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const te = document.getElementById('tab-'+id); if(te) te.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pg-'+id).classList.add('active');
+  render();
+};
+
+function popYears() {
+  const ys = new Set();
+  const ty = new Date().getFullYear();
+  [ty,ty-1,ty-2].forEach(y=>ys.add(String(y)));
+  DB.clubTx.forEach(t=>ys.add(t.date.slice(0,4)));
+  DB.members.forEach(m=>(m.expenses||[]).forEach(t=>ys.add(t.date.slice(0,4))));
+  const sorted = [...ys].sort((a,b)=>b-a);
+  ['af-yr','mf-yr'].forEach(id=>{
+    const e=document.getElementById(id); if(!e)return;
+    const cv=e.value;
+    e.innerHTML='<option value="">All years</option>'+sorted.map(y=>`<option>${y}</option>`).join('');
+    if(cv)e.value=cv;
+  });
+  const mys = document.getElementById('m-yrsel');
+  if(mys){
+    const cv=mys.value||String(ty);
+    mys.innerHTML=sorted.map(y=>`<option>${y}</option>`).join('');
+    mys.value=sorted.includes(cv)?cv:sorted[0]||String(ty);
+  }
+}
+
+// ══════════════════════════════════
+//  RENDER
+// ══════════════════════════════════
+function render() {
+  if(!CU)return;
+  popYears();
+  if(CU.role==='admin'){renderOverview();renderMembersPage();}
+  else renderMyPage();
+}
+
+function renderOverview() {
+  const exps=DB.clubTx.filter(t=>t.type==='expense');
+  const deps=DB.clubTx.filter(t=>t.type==='deposit');
+  st('s-bal','₹'+fmt(DB.clubBalance));
+  st('s-exp','₹'+fmt(exps.reduce((s,t)=>s+t.amount,0)));
+  st('s-expc',exps.length+' entries');
+  st('s-dep','₹'+fmt(deps.reduce((s,t)=>s+t.amount,0)));
+  st('s-depc',deps.length+' deposits');
+  st('s-mem',DB.members.length);
+  renderAllTx();
+}
+
+function getAllRows() {
+  let all=[];
+  DB.clubTx.forEach(t=>all.push({...t,who:'__club__',wl:'Club'}));
+  DB.members.forEach(m=>(m.expenses||[]).forEach(t=>all.push({...t,who:m.id,wl:m.name,type:'member'})));
+  return all.sort((a,b)=>b.id-a.id);
+}
+
+window.renderAllTx = function() {
+  const who=gv('af-who'),type=gv('af-type'),yr=gv('af-yr'),mo=gv('af-mo');
+  let rows=getAllRows().filter(t=>{
+    if(who&&t.who!==who)return false;
+    if(type&&t.type!==type)return false;
+    if(yr&&t.date.slice(0,4)!==yr)return false;
+    if(mo&&t.date.slice(5,7)!==mo)return false;
+    return true;
+  });
+  const tbody=document.getElementById('allTxBody'),empty=document.getElementById('allTxEmpty');
+  if(!rows.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  tbody.innerHTML=rows.map(t=>{
+    const isMem=t.type==='member',isDep=t.type==='deposit';
+    const ac=isMem?'var(--purple)':isDep?'var(--green)':'var(--red)';
+    const sign=isDep?'+':isMem?'':'−';
+    const tb=isMem?'<span class="badge bm">Personal</span>':isDep?'<span class="badge bd">Deposit</span>':'<span class="badge be">Expense</span>';
+    const bc=(!isMem&&t.balanceAfter!==undefined)?`<span class="mono" style="font-size:12px;color:var(--tx3)">₹${fmt(t.balanceAfter)}</span>`:'<span style="color:var(--tx3)">—</span>';
+    const ini=t.wl.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    const avc=t.who==='__club__'?'rgba(79,124,255,.2)':'rgba(52,199,123,.2)';
+    const avtc=t.who==='__club__'?'var(--acc)':'var(--green)';
+    const fid=t.firestoreId||t.id;
+    const del=`<button class="btn btn-danger" onclick="askDelete('${isMem?'member':'club'}','${fid}','${t.who||''}')" style="font-size:11px;padding:4px 10px">Del</button>`;
+    return`<tr>
+      <td class="mono" style="font-size:12px">${fd(t.date)}</td>
+      <td><div style="display:flex;align-items:center;gap:7px"><div style="width:24px;height:24px;border-radius:50%;background:${avc};color:${avtc};display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600">${ini}</div><span style="font-size:12px">${esc(t.wl)}</span></div></td>
+      <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(t.desc)}</td>
+      <td><span class="badge b${t.category||'Other'}">${t.category||'—'}</span></td>
+      <td>${tb}</td>
+      <td style="text-align:right;color:${ac}" class="mono">${sign}₹${fmt(t.amount)}</td>
+      <td style="text-align:right">${bc}</td>
+      <td>${del}</td>
+    </tr>`;
+  }).join('');
+};
+
+window.clrAF = function(){['af-who','af-type','af-yr','af-mo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderAllTx();};
+
+function renderMembersPage() {
+  const list=document.getElementById('memberList'),empty=document.getElementById('memberEmpty');
+  if(!DB.members.length){list.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  list.innerHTML=DB.members.map(m=>{
+    const tot=(m.expenses||[]).reduce((s,t)=>s+t.amount,0);
+    const ini=m.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+    return`<div class="mrow">
+      <div class="mavat">${ini}</div>
+      <div class="minfo">
+        <div class="mname">${esc(m.name)}</div>
+        <div class="mmeta"><span class="badge bm" style="font-size:10px">@${esc(m.username)}</span></div>
+        <div class="mphone">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13 19.79 19.79 0 0 1 1.62 4.38 2 2 0 0 1 3.59 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 9.58a16 16 0 0 0 6.29 6.29l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          ${esc(m.phone||'No phone')}
+        </div>
+      </div>
+      <div class="mspent"><div class="mamt">₹${fmt(tot)}</div><div class="mcnt">${(m.expenses||[]).length} expenses</div></div>
+      <div class="mact">
+        <button class="btn" onclick="openResetModal('${m.id}')" style="font-size:11px;padding:5px 10px;color:var(--amber)">Reset Pass</button>
+        <button class="btn" onclick="openEditMember('${m.id}')" style="font-size:11px;padding:5px 10px">Edit</button>
+        <button class="btn btn-danger" onclick="askDelete('member-account','${m.id}',null)" style="font-size:11px;padding:5px 10px">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.renderMyPage = function() {
+  const member=DB.members.find(m=>m.id===CU.id);
+  if(!member)return;
+  const arr=member.expenses||[];
+  const ty=String(new Date().getFullYear()),tm=String(new Date().getMonth()+1).padStart(2,'0');
+  const tot=arr.reduce((s,t)=>s+t.amount,0);
+  const ytot=arr.filter(t=>t.date.slice(0,4)===ty).reduce((s,t)=>s+t.amount,0);
+  const mtot=arr.filter(t=>t.date.slice(0,4)===ty&&t.date.slice(5,7)===tm).reduce((s,t)=>s+t.amount,0);
+  st('m-tot','₹'+fmt(tot));st('m-cnt',arr.length+' entr'+(arr.length!==1?'ies':'y'));
+  st('m-yr','₹'+fmt(ytot));st('m-yrl',ty);
+  st('m-mo','₹'+fmt(mtot));st('m-mol',new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'}));
+  st('m-add-t','Add My Expense — '+member.name);
+  const syr=document.getElementById('m-yrsel')?.value||ty;
+  const bm={};
+  arr.filter(t=>t.date.slice(0,4)===syr).forEach(t=>{
+    const mo=t.date.slice(5,7);
+    if(!bm[mo])bm[mo]={total:0,count:0};
+    bm[mo].total+=t.amount;bm[mo].count++;
+  });
+  const mos=Object.keys(bm).sort();
+  const mg=document.getElementById('monthGrid');
+  mg.innerHTML=mos.length?mos.map(m=>`<div class="mcard" onclick="setMF('${syr}','${m}')">
+    <div class="mcm">${MONTHS[parseInt(m)-1]} ${syr}</div>
+    <div class="mct">₹${fmt(bm[m].total)}</div>
+    <div class="mcn">${bm[m].count} expense${bm[m].count!==1?'s':''}</div>
+  </div>`).join(''):`<div style="color:var(--tx3);font-size:12px">No expenses in ${syr}.</div>`;
+  renderMyTable();
+};
+
+window.renderMyTable = function() {
+  const member=DB.members.find(m=>m.id===CU.id);if(!member)return;
+  const yr=gv('mf-yr'),mo=gv('mf-mo'),cat=gv('mf-cat');
+  let rows=[...(member.expenses||[])].sort((a,b)=>b.id-a.id).filter(t=>{
+    if(yr&&t.date.slice(0,4)!==yr)return false;
+    if(mo&&t.date.slice(5,7)!==mo)return false;
+    if(cat&&t.category!==cat)return false;
+    return true;
+  });
+  const tbody=document.getElementById('myTxBody'),empty=document.getElementById('myTxEmpty');
+  if(!rows.length){tbody.innerHTML='';empty.style.display='';return;}
+  empty.style.display='none';
+  tbody.innerHTML=rows.map(t=>`<tr>
+    <td class="mono" style="font-size:12px">${fd(t.date)}</td>
+    <td style="font-weight:500">${esc(t.desc)}</td>
+    <td><span class="badge b${t.category}">${t.category}</span></td>
+    <td style="font-size:12px;color:var(--tx2)">${esc(t.note)||'—'}</td>
+    <td style="text-align:right;color:var(--red)" class="mono">₹${fmt(t.amount)}</td>
+    <td><button class="btn btn-danger" onclick="askDelete('my-exp','${t.firestoreId}',null)" style="font-size:11px;padding:4px 10px">Del</button></td>
+  </tr>`).join('');
+};
+
+window.setMF = function(yr,mo){const a=document.getElementById('mf-yr'),b=document.getElementById('mf-mo');if(a)a.value=yr;if(b)b.value=mo;renderMyTable();};
+window.clrMF = function(){['mf-yr','mf-mo','mf-cat'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});renderMyTable();};
+
+// ══════════════════════════════════
+//  ACTIONS
+// ══════════════════════════════════
+window.addBalance = async function() {
+  const amt=parseFloat(document.getElementById('aAmt').value);
+  const note=document.getElementById('aNote').value.trim()||'Balance added';
+  if(!amt||amt<=0)return showToast('Enter a valid amount');
+  setSyncStatus('saving','Saving...');
+  DB.clubBalance+=amt;
+  const tx={id:Date.now(),type:'deposit',date:td(),desc:note,category:'Deposit',amount:amt,balanceAfter:DB.clubBalance};
+  try{
+    const ref=await addDoc(clubTxRef,tx);
+    DB.clubTx.unshift({...tx,firestoreId:ref.id});
+    await saveConfig();
+    document.getElementById('aAmt').value='';document.getElementById('aNote').value='';
+    render();showToast('Balance added ₹'+fmt(amt));
+  }catch(e){DB.clubBalance-=amt;setSyncStatus('err','Error');showToast('Error saving!');}
+};
+
+window.addClubExp = async function() {
+  const desc=document.getElementById('eDesc').value.trim();
+  const amt=parseFloat(document.getElementById('eAmt').value);
+  const cat=document.getElementById('eCat').value;
+  const date=document.getElementById('eDate').value;
+  if(!desc)return showToast('Enter a description');
+  if(!amt||amt<=0)return showToast('Enter a valid amount');
+  if(!date)return showToast('Select a date');
+  if(DB.clubBalance<amt)return showToast('Insufficient club balance!');
+  setSyncStatus('saving','Saving...');
+  DB.clubBalance-=amt;
+  const tx={id:Date.now(),type:'expense',date,desc,category:cat,amount:amt,balanceAfter:DB.clubBalance};
+  try{
+    const ref=await addDoc(clubTxRef,tx);
+    DB.clubTx.unshift({...tx,firestoreId:ref.id});
+    await saveConfig();
+    document.getElementById('eDesc').value='';document.getElementById('eAmt').value='';
+    render();showToast('Expense added ₹'+fmt(amt));
+  }catch(e){DB.clubBalance+=amt;setSyncStatus('err','Error');showToast('Error saving!');}
+};
+
+window.addMyExp = async function() {
+  const member=DB.members.find(m=>m.id===CU.id);if(!member)return;
+  const desc=document.getElementById('mDesc').value.trim();
+  const amt=parseFloat(document.getElementById('mAmt').value);
+  const cat=document.getElementById('mCat').value;
+  const date=document.getElementById('mDate').value;
+  const note=document.getElementById('mNote').value.trim();
+  if(!desc)return showToast('Enter a product/item name');
+  if(!amt||amt<=0)return showToast('Enter a valid amount');
+  if(!date)return showToast('Select a date');
+  setSyncStatus('saving','Saving...');
+  const exp={id:Date.now(),date,desc,category:cat,note,amount:amt};
+  try{
+    const expRef=collection(db,'members',member.id,'expenses');
+    const ref=await addDoc(expRef,exp);
+    if(!member.expenses)member.expenses=[];
+    member.expenses.unshift({...exp,firestoreId:ref.id});
+    setSyncStatus('ok','Saved');
+    document.getElementById('mDesc').value='';document.getElementById('mAmt').value='';document.getElementById('mNote').value='';
+    render();showToast('Expense recorded ₹'+fmt(amt));
+  }catch(e){setSyncStatus('err','Error');showToast('Error saving!');}
+};
+
+// ── MEMBER MANAGEMENT ──
+window.openAddMember = function() {
+  editingMemberId=null;
+  document.getElementById('modalTitle').textContent='Add Member';
+  document.getElementById('saveMemBtn').textContent='Add Member';
+  ['mName','mUsername','mPassword','mPhone'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('memberModal').classList.add('open');
+};
+
+window.openEditMember = function(id) {
+  const m=DB.members.find(m=>m.id===id);if(!m)return;
+  editingMemberId=id;
+  document.getElementById('modalTitle').textContent='Edit Member';
+  document.getElementById('saveMemBtn').textContent='Save Changes';
+  document.getElementById('mName').value=m.name;
+  document.getElementById('mUsername').value=m.username;
+  document.getElementById('mPassword').value=m.password;
+  document.getElementById('mPhone').value=m.phone||'';
+  document.getElementById('memberModal').classList.add('open');
+};
+
+window.saveMember = async function() {
+  const name=document.getElementById('mName').value.trim();
+  const username=document.getElementById('mUsername').value.trim().toLowerCase();
+  const password=document.getElementById('mPassword').value;
+  const phone=document.getElementById('mPhone').value.trim();
+  if(!name)return showToast('Enter member name');
+  if(!username)return showToast('Enter a username');
+  if(!password)return showToast('Enter a password');
+  const taken=DB.members.find(m=>m.username===username&&m.id!==editingMemberId);
+  if(taken)return showToast('Username already taken');
+  if(username===DB.admin.username)return showToast('Username already taken');
+  setSyncStatus('saving','Saving...');
+  try{
+    if(editingMemberId){
+      const m=DB.members.find(m=>m.id===editingMemberId);
+      if(m){Object.assign(m,{name,username,password,phone});}
+      await setDoc(doc(db,'members',editingMemberId),{name,username,password,phone},{ merge:true });
+    }else{
+      const newM={name,username,password,phone,expenses:[]};
+      const ref=await addDoc(membersRef,{name,username,password,phone});
+      DB.members.push({...newM,id:ref.id});
+    }
+    // refresh who filter
+    const ws=document.getElementById('af-who');
+    if(ws){ws.innerHTML='<option value="">All users</option><option value="__club__">Club only</option>'+DB.members.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');}
+    closeMemberModal();setSyncStatus('ok','Saved');render();
+    showToast(editingMemberId?'Member updated':'Member added');
+  }catch(e){setSyncStatus('err','Error');showToast('Error saving!');}
+};
+
+window.closeMemberModal = function(){document.getElementById('memberModal').classList.remove('open');editingMemberId=null;};
+
+// ── RESET PASSWORD ──
+window.openResetModal = function(id) {
+  const m=DB.members.find(m=>m.id===id);if(!m)return;
+  resetTargetId=id;
+  document.getElementById('resetSub').textContent=`Setting new password for ${m.name} (Phone: ${m.phone||'not set'})`;
+  document.getElementById('resetPass').value='';
+  document.getElementById('resetModal').classList.add('open');
+};
+
+window.confirmReset = async function() {
+  const np=document.getElementById('resetPass').value;
+  if(!np)return showToast('Enter a new password');
+  const m=DB.members.find(m=>m.id===resetTargetId);
+  if(!m)return;
+  setSyncStatus('saving','Saving...');
+  try{
+    m.password=np;
+    await setDoc(doc(db,'members',m.id),{password:np},{merge:true});
+    setSyncStatus('ok','Saved');render();showToast('Password reset for '+m.name);
+  }catch(e){setSyncStatus('err','Error');showToast('Error!');}
+  closeResetModal();
+};
+
+window.closeResetModal = function(){document.getElementById('resetModal').classList.remove('open');resetTargetId=null;};
+
+// ── DELETE ──
+window.askDelete = function(type,id,uid){delTarget={type,id,uid};document.getElementById('deleteModal').classList.add('open');};
+window.closeDeleteModal = function(){document.getElementById('deleteModal').classList.remove('open');delTarget=null;};
+
+window.confirmDelete = async function() {
+  if(!delTarget)return;
+  const{type,id,uid}=delTarget;
+  setSyncStatus('saving','Saving...');
+  try{
+    if(type==='club'){
+      const idx=DB.clubTx.findIndex(t=>(t.firestoreId||t.id)==id);
+      if(idx!==-1){
+        const t=DB.clubTx[idx];
+        DB.clubBalance+=t.type==='expense'?t.amount:-t.amount;
+        await deleteDoc(doc(db,'clubTransactions',String(id)));
+        DB.clubTx.splice(idx,1);
+        recalcClub();await saveConfig();
+      }
+    }else if(type==='member'){
+      const m=DB.members.find(m=>m.id===uid);
+      if(m){
+        const idx=(m.expenses||[]).findIndex(t=>(t.firestoreId||t.id)==id);
+        if(idx!==-1){
+          await deleteDoc(doc(db,'members',m.id,'expenses',String(id)));
+          m.expenses.splice(idx,1);
+        }
+      }
+    }else if(type==='my-exp'){
+      const member=DB.members.find(m=>m.id===CU.id);
+      if(member){
+        const idx=(member.expenses||[]).findIndex(t=>(t.firestoreId||t.id)==id);
+        if(idx!==-1){
+          await deleteDoc(doc(db,'members',member.id,'expenses',String(id)));
+          member.expenses.splice(idx,1);
+        }
+      }
+    }else if(type==='member-account'){
+      await deleteDoc(doc(db,'members',String(id)));
+      DB.members=DB.members.filter(m=>m.id!==id);
+    }
+    setSyncStatus('ok','Saved');
+  }catch(e){setSyncStatus('err','Error');showToast('Error deleting!');}
+  closeDeleteModal();render();showToast('Deleted');
+};
+
+function recalcClub(){
+  let b=0;
+  [...DB.clubTx].sort((a,c)=>a.id-c.id).forEach(t=>{b+=t.type==='deposit'?t.amount:-t.amount;t.balanceAfter=b;});
+  DB.clubBalance=b;
+}
+
+// ══════════════════════════════════
+//  EXPORT
+// ══════════════════════════════════
+window.exportExcel = function() {
+  const wb=XLSX.utils.book_new();
+  const r1=[['Date','Description','Category','Type','Amount (₹)','Club Balance After']];
+  DB.clubTx.forEach(t=>r1.push([fd(t.date),t.desc,t.category,t.type==='expense'?'Expense':'Deposit',(t.type==='expense'?-t.amount:t.amount).toFixed(2),t.balanceAfter.toFixed(2)]));
+  const ws1=XLSX.utils.aoa_to_sheet(r1);ws1['!cols']=[{wch:14},{wch:30},{wch:14},{wch:10},{wch:14},{wch:18}];
+  XLSX.utils.book_append_sheet(wb,ws1,'Club Transactions');
+  DB.members.forEach(m=>{
+    const rows=[['Date','Product / Item','Category','Note','Amount (₹)']];
+    (m.expenses||[]).forEach(t=>rows.push([fd(t.date),t.desc,t.category,t.note||'',t.amount.toFixed(2)]));
+    const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:14},{wch:28},{wch:14},{wch:20},{wch:12}];
+    XLSX.utils.book_append_sheet(wb,ws,m.name.slice(0,31));
+  });
+  XLSX.writeFile(wb,'ybf-club-finance.xlsx');showToast('Excel exported!');
+};
+
+window.exportPDF = function() {
+  const{jsPDF}=window.jspdf;const doc=new jsPDF();
+  pdfHdr(doc,'YBF Club Finance — Full Report');let y=38;
+  doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Club Transactions',14,y);y+=5;
+  y=pdfTbl(doc,['Date','Description','Category','Type','Amount'],DB.clubTx.map(t=>[fd(t.date),t.desc.slice(0,20),t.category,t.type==='expense'?'Expense':'Deposit',(t.type==='expense'?'−':'+')+' Rs.'+fmt(t.amount)]),y);
+  DB.members.forEach(m=>{
+    if(y>240){doc.addPage();y=20;}
+    doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text(m.name+' — Personal Expenses',14,y);y+=5;
+    y=pdfTbl(doc,['Date','Item','Category','Note','Amount'],(m.expenses||[]).map(t=>[fd(t.date),t.desc.slice(0,18),t.category,(t.note||'').slice(0,15),'Rs.'+fmt(t.amount)]),y);
+  });
+  doc.save('ybf-club-finance.pdf');showToast('PDF exported!');
+};
+
+window.exportMemberExcel = function() {
+  const m=DB.members.find(m=>m.id===CU.id);if(!m)return;
+  const wb=XLSX.utils.book_new();
+  const rows=[['Date','Product / Item','Category','Note','Amount (₹)']];
+  (m.expenses||[]).forEach(t=>rows.push([fd(t.date),t.desc,t.category,t.note||'',t.amount.toFixed(2)]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);XLSX.utils.book_append_sheet(wb,ws,'My Expenses');
+  XLSX.writeFile(wb,'my-expenses.xlsx');showToast('Excel exported!');
+};
+
+window.exportMemberPDF = function() {
+  const m=DB.members.find(m=>m.id===CU.id);if(!m)return;
+  const{jsPDF}=window.jspdf;const doc=new jsPDF();
+  pdfHdr(doc,m.name+' — Expense Report');let y=38;
+  pdfTbl(doc,['Date','Product / Item','Category','Note','Amount'],(m.expenses||[]).map(t=>[fd(t.date),t.desc.slice(0,20),t.category,(t.note||'').slice(0,14),'Rs.'+fmt(t.amount)]),y);
+  doc.save('my-expenses.pdf');showToast('PDF exported!');
+};
+
+function pdfHdr(doc,title){
+  doc.setFont('helvetica','bold');doc.setFontSize(14);doc.text(title,14,16);
+  doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(120);
+  doc.text('Generated: '+new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}),14,24);
+  doc.text('Club Balance: Rs.'+fmt(DB.clubBalance),14,30);doc.setTextColor(0);
+}
+function pdfTbl(doc,hdrs,rows,sy){
+  const cw=(210-28)/hdrs.length;const cs=[];let cx=14;hdrs.forEach(()=>{cs.push(cx);cx+=cw;});
+  doc.setFont('helvetica','bold');doc.setFontSize(8);
+  doc.setFillColor(230,230,230);doc.rect(14,sy-3,183,7,'F');
+  hdrs.forEach((h,i)=>doc.text(h,cs[i],sy+1));
+  let y=sy+9;doc.setFont('helvetica','normal');
+  rows.forEach((row,ri)=>{
+    if(y>272){doc.addPage();y=16;}
+    if(ri%2===0){doc.setFillColor(248,248,248);doc.rect(14,y-3,183,6,'F');}
+    row.forEach((c,i)=>doc.text(String(c||''),cs[i],y+1));y+=7;
+  });
+  return y+5;
+}
+
+// ══════════════════════════════════
+//  UTILS
+// ══════════════════════════════════
+function fmt(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fd(d){if(!d)return'';const[y,m,day]=d.split('-');return`${day} ${MONTHS[parseInt(m)-1]} ${y}`;}
+function td(){return new Date().toISOString().slice(0,10);}
+function st(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
+function gv(id){const e=document.getElementById(id);return e?e.value:'';}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+
+</script>
+</body>
+</html>
