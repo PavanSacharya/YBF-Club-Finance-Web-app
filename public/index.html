@@ -194,20 +194,34 @@ tbody td{padding:11px 14px;vertical-align:middle}
 </div>
 
 <!-- LOGIN -->
-<div id="loginPage" class="lpage" style="display:none">
-  <div class="lbox">
-    <div class="llogo">YBF</div>
-    <h1>YBF Club Finance</h1>
-    <p class="lsub">Sign in to your account</p>
-    <div class="field"><label>Username</label><input type="text" id="lUser" placeholder="Enter username" onkeydown="if(event.key==='Enter')document.getElementById('lPass').focus()"></div>
-    <div class="field"><label>Password</label><input type="password" id="lPass" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+<!-- ══════════════ LOGIN ══════════════ -->
+<div id="loginPage" class="login-page">
+  <div class="login-box">
+    <img src="Assets/YBF-Logo.png" style="width:80px;height:80px;border-radius:16px;object-fit:cover;display:block;margin:0 auto 1.4rem;">
+    <h1>Youth Best Friends -Finance App</h1>
+    <p class="sub">Sign in to your account</p>
+
+    <div class="field">
+      <label>Username</label>
+      <input type="text" id="loginUser" placeholder="Enter username" autocomplete="username" onkeydown="if(event.key==='Enter')document.getElementById('loginPass').focus()">
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="loginPass" placeholder="Enter password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+
     <button class="btn btn-acc" onclick="doLogin()">Sign In</button>
-    <div class="lerr" id="lerr">Incorrect username or password.</div>
-    <div class="forgot">Forgot password? <span onclick="showForgot()">Click here</span></div>
+    <div class="login-err" id="loginErr">Incorrect username or password.</div>
+
+    <div class="forgot-hint">
+      Forgot password? <span onclick="showForgot()">Click here</span>
+    </div>
+
+    <!-- FORGOT → show admin phone -->
     <div class="phone-box" id="forgotBox">
-      <div class="pl">Contact Admin to reset your password</div>
-      <div class="pn" id="adminPhone">—</div>
-      <div class="pm" id="adminPhoneName"></div>
+      <div class="phone-label">Contact Admin to reset your password</div>
+      <div class="phone-num" id="adminPhoneDisplay">—</div>
+      <div class="phone-name" id="adminNameDisplay"></div>
     </div>
   </div>
 </div>
